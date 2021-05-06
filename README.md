@@ -54,3 +54,64 @@ and [See This Slides]()
 7. Finally, close the file stream:
 
         ifile.close();
+## The example code discussed so far in this recipe can be reorganized in the form of two general functions for writing and reading data to and from a file:
+
+        #include <iostream>
+        #include <string>
+        #include <fstream>
+        #include <functional>
+        using namespace std;
+        bool write_data(char const * const filename, char const * const data, size_t const size)
+        {
+        auto success = false;
+        ofstream ofile(filename, std::ios::binary);
+        if(ofile.is_open())
+        {
+                try
+                {
+                   ofile.write(data, size);
+                  success = true;
+                }
+                catch(std::ios_base::failure &)
+                {
+                // handle the error
+                }
+                ofile.close();
+        }
+        return success;
+        }
+        size_t read_data(char const * const filename, std::function<char*(size_t const)> allocator)
+        {
+        size_t readbytes = 0;
+        std::ifstream ifile(filename, std::ios::ate | std::ios::binary);
+        if(ifile.is_open())
+        {
+        auto length = static_cast<size_t>(ifile.tellg());
+        ifile.seekg(0, std::ios_base::beg);
+        auto buffer = allocator(length);
+                try
+                {
+                ifile.read(buffer, length);
+                readbytes = static_cast<size_t>(ifile.gcount());
+                }
+                catch (std::ios_base::failure &)
+                {
+                // handle the error
+                }
+                ifile.close();
+        }
+        return readbytes;
+        }
+        #include<vector>
+        int main()
+        {
+        std::vector<unsigned char> output{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        std::vector<unsigned char> input;
+        if (write_data("sample.bin",(char*)output.data(),output.size()))
+        {
+                if (read_data("sample.bin",[&input](size_t const length) {input.resize(length);return (char*)(input.data()); }) > 0)
+                {
+                std::cout << (output == input ? "equal" : "not equal") << std::endl;
+        }
+        }
+        }
