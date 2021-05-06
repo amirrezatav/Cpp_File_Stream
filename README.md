@@ -112,6 +112,6 @@ and [See This Slides]()
                 if (read_data("sample.bin",[&input](size_t const length) {input.resize(length);return (char*)(input.data()); }) > 0)
                 {
                 std::cout << (output == input ? "equal" : "not equal") << std::endl;
-        }
+                }
         }
         }
